@@ -46,7 +46,8 @@ let package = Package(
                 .define("SWIFT_PACKAGE")
             ],
             linkerSettings: [
-                .unsafeFlags(["-Xlinker", "-force_load", "-Xlinker", "libwg-go.a"], .when(platforms: [.iOS, .macOS]))
+                .linkedLibrary("wg-go"),
+                .unsafeFlags(["-L", "Sources/WireGuardKitGo"], .when(platforms: [.iOS, .macOS]))
             ]
         )
     ]
