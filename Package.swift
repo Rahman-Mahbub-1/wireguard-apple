@@ -1,5 +1,4 @@
 // swift-tools-version:5.3
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
@@ -48,13 +47,8 @@ let package = Package(
             cSettings: [
                 .headerSearchPath("."),
                 .define("SWIFT_PACKAGE")
-            ],
-            linkerSettings: [
-                .unsafeFlags([
-                    "-Xlinker", "-force_load", 
-                    "-Xlinker", "libwg-go.a"
-                ], .when(platforms: [.iOS, .macOS]))
             ]
+            // Remove all linkerSettings that cause conflicts
         )
     ]
 )
