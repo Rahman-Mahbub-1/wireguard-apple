@@ -46,8 +46,7 @@ let package = Package(
                 .define("SWIFT_PACKAGE")
             ],
             linkerSettings: [
-                .linkedLibrary("wg-go"),
-                .unsafeFlags(["-L."], .when(platforms: [.iOS, .macOS]))
+                .unsafeFlags(["-Xlinker", "-force_load", "-Xlinker", "libwg-go.a"], .when(platforms: [.iOS, .macOS]))
             ]
         )
     ]
