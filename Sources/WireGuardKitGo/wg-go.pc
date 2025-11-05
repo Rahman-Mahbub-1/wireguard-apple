@@ -1,0 +1,10 @@
+prefix=.
+exec_prefix=${prefix}
+libdir=${exec_prefix}
+includedir=${prefix}
+
+Name: wg-go
+Description: WireGuard Go Implementation
+Version: 1.0.0
+Libs: -L${libdir} -lwg-go
+Cflags: -I${includedir}

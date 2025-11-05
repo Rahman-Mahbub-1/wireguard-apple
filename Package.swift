@@ -37,17 +37,24 @@ let package = Package(
                 "Makefile",
                 ".tmp",
                 ".gitignore",
-                "out"
+                "out",
+                "wg-go.pc",
+                "libwg-go.xcframework"
             ],
             sources: ["dummy.c"],
+            resources: [
+                .copy("libwg-go.a")
+            ],
             publicHeadersPath: ".",
             cSettings: [
                 .headerSearchPath("."),
                 .define("SWIFT_PACKAGE")
             ],
             linkerSettings: [
-                .linkedLibrary("wg-go"),
-                .unsafeFlags(["-L", "Sources/WireGuardKitGo"], .when(platforms: [.iOS, .macOS]))
+                .unsafeFlags([
+                    "-Xlinker", "-force_load", 
+                    "-Xlinker", "libwg-go.a"
+                ], .when(platforms: [.iOS, .macOS]))
             ]
         )
     ]
