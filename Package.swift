@@ -38,8 +38,7 @@ let package = Package(
                 ".tmp",
                 ".gitignore",
                 "out",
-                "wg-go.pc",
-                "libwg-go.xcframework"
+                "wg-go.pc"
             ],
             sources: ["dummy.c"],
             resources: [
