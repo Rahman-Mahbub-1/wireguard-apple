@@ -10,7 +10,7 @@ let package = Package(
     ],
     products: [
         .library(name: "WireGuardKit", targets: ["WireGuardKit"]),
-        .library(name: "WireGuardKitGo", targets: ["WireGuardKitGo"])  // ✅ Add this product
+        .library(name: "WireGuardKitGo", targets: ["WireGuardKitGo"])
     ],
     dependencies: [],
     targets: [
@@ -35,19 +35,17 @@ let package = Package(
                 "go.sum", 
                 "api-apple.go",
                 "Makefile",
-                ".tmp",
                 ".gitignore",
-                "out",
                 "wg-go.pc"
             ],
             sources: ["dummy.c"],
-            resources: [.copy("libwg-go.a")],
             publicHeadersPath: ".",
-            cSettings: [
-                .headerSearchPath("."),
-                .define("SWIFT_PACKAGE")
-            ],
-            linkerSettings: [.linkedLibrary("wg-go")]  // 🎯 CRITICAL!
+            linkerSettings: [
+                .unsafeFlags([
+                    "-Xlinker", "-force_load",
+                    "-Xlinker", "\(#file)/../Sources/WireGuardKitGo/libwg-go.a"
+                ], .when(platforms: [.iOS, .macOS]))
+            ]
         )
     ]
 )
