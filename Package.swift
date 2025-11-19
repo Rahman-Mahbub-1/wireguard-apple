@@ -27,7 +27,7 @@ let package = Package(
         ),
         .target(
             name: "WireGuardKitGo",
-            dependencies: [],
+            dependencies: ["WireGuardKitGoBinary"],
             path: "Sources/WireGuardKitGo",
             exclude: [
                 "goruntime-boottime-over-monotonic.diff",
@@ -36,16 +36,15 @@ let package = Package(
                 "api-apple.go",
                 "Makefile",
                 ".gitignore",
-                "wg-go.pc"
+                "wg-go.pc",
+                "libwg-go.a"
             ],
             sources: ["dummy.c"],
-            resources: [.process("libwg-go.a")],
-            publicHeadersPath: ".",
-            cSettings: [
-                .headerSearchPath("."),
-                .define("SWIFT_PACKAGE")
-            ],
-            linkerSettings: [.linkedLibrary("wg-go")]  // 🎯 CRITICAL!
+            publicHeadersPath: "."
+        ),
+        .binaryTarget(
+            name: "WireGuardKitGoBinary",
+            path: "Sources/WireGuardKitGo/libwg-go.xcframework"
         )
     ]
 )
