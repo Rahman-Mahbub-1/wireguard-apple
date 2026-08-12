@@ -68,27 +68,50 @@ and ships the previous library.
 
 ## Pointing at a different engine
 
-Right now `go.mod` carries a **local path** replace:
+`go.mod` pins the engine by commit:
 
 ```
-replace golang.zx2c4.com/wireguard => /Users/avianbrand/Desktop/Projects/VMPGuard
+replace golang.zx2c4.com/wireguard => github.com/avianit/VMPGuard v0.0.0-20260811121619-cb9c8f7f4482
 ```
 
-Good for iterating — edit the engine, run the script, test — but it only works on
-that machine. For CI or anyone else, push VMPGuard and pin it:
+VMPGuard's `go.mod` still declares `module golang.zx2c4.com/wireguard`. That is
+deliberate — it keeps the fork drop-in compatible, and it is why `replace` is
+needed rather than a plain `require` of the GitHub path.
+
+**VMPGuard is a private repository**, so the Go module proxy and checksum
+database cannot see it. Without `GOPRIVATE` a build fails with a 404 from
+`sum.golang.org` and a git credential prompt:
+
+```sh
+export GOPRIVATE='github.com/avianit/*'
+```
+
+`build-xcframework.sh` sets this itself. CI needs it too, plus a token with read
+access to the repo.
+
+To move to a newer engine commit:
 
 ```sh
 cd Sources/WireGuardKitGo
-go mod edit -replace=golang.zx2c4.com/wireguard=github.com/avianit/VMPGuard@<tag-or-commit>
+go mod edit -replace=golang.zx2c4.com/wireguard=github.com/avianit/VMPGuard@<commit>
 GOFLAGS=-mod=mod go mod tidy
 ./build-xcframework.sh
 ```
 
-Note that VMPGuard's `go.mod` still declares `module golang.zx2c4.com/wireguard`.
-That is deliberate — it keeps the fork drop-in compatible, and it is why `replace`
-is needed rather than a plain `require` of the GitHub path.
+For local iteration, point it at a working copy instead — nothing else changes:
+
+```sh
+go mod edit -replace=golang.zx2c4.com/wireguard=/path/to/VMPGuard
+```
 
 To go back to upstream, drop the replace and `go mod tidy`.
+
+## Known limitation: no simulator slice
+
+`libwg-go.xcframework` contains **`ios-arm64` only** — no simulator, no macOS.
+Consuming this package via SwiftPM means any simulator build fails to link, which
+also affects previews and some indexing. Device builds are unaffected. Adding the
+missing slices is a change to `build-xcframework.sh`, not to the engine.
 
 ## Other required changes
 

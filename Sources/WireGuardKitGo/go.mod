@@ -13,4 +13,4 @@ require (
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 )
 
-replace golang.zx2c4.com/wireguard => /Users/avianbrand/Desktop/Projects/VMPGuard
+replace golang.zx2c4.com/wireguard => github.com/avianit/VMPGuard v0.0.0-20260811121619-cb9c8f7f4482

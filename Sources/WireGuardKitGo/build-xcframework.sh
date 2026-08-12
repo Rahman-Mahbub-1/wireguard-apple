@@ -11,6 +11,12 @@ cd "$(dirname "$0")"
 
 MIN_IOS="${MIN_IOS:-15.0}"   # matches Package.swift's .iOS("15.0")
 
+# VMPGuard is a private repository, so the module proxy and checksum database
+# cannot see it — without this, `go build` fails with a 404 from sum.golang.org
+# and a git credential prompt. Fetching goes direct, using whatever credentials
+# git already has. CI needs a token with read access to the repo.
+export GOPRIVATE="${GOPRIVATE:-github.com/avianit/*}"
+
 echo "==> engine: $(go list -m -f '{{.Path}} {{if .Replace}}=> {{.Replace.Path}} {{.Replace.Version}}{{else}}{{.Version}}{{end}}' golang.zx2c4.com/wireguard)"
 
 # The Makefile copies GOROOT and applies goruntime-boottime-over-monotonic.diff,
