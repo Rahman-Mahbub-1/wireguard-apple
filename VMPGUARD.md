@@ -119,13 +119,43 @@ holds a tunnel up.
 the in-flight buffer count. This is the one change here that could plausibly get
 the extension killed, and it will not show up on a desktop.
 
-**2. There is no fill-rate reporter in this build.** VMPGuard's `batchstats.go`
-lives in `package main` of the wireguard-go *command*, not the library, so it is
-not part of the c-archive. `conn.BatchStats()` and `tun.BatchStats()` are exported
-and callable — but nothing calls them here.
+**2. Nothing is measured unless you turn the reporter on** — see below.
 
-Without that, there is no way to tell on a device whether batching engaged at
-all, and a fill rate of 1.00 means every other number is measuring something
-else. Adding a periodic reporter to `api-apple.go`, routed through the existing
-logger callback, is a small change and should come before any on-device
-measurement.
+## Measuring the fill rate on a device
+
+VMPGuard's own `batchstats.go` lives in `package main` of the wireguard-go
+*command*, so it is not part of this c-archive. `batchstats-apple.go` adds the
+equivalent for the library, reporting through the tunnel's existing logger so the
+lines land wherever the app already sends WireGuard logs.
+
+**It is opt-in and off by default.** From the app, before starting the tunnel:
+
+```swift
+WireGuardAdapter.batchStatsInterval = 5   // seconds; 0 disables
+```
+
+Then look for:
+
+```
+batch stats: UDP-rx 2.83 pkts/call (5.4 req, 52% used) over 41210 | TUN-rd 1.00 … | TUN-wr 2.83 …
+```
+
+**Read the fill first, before any throughput number.** Batching amortises one
+syscall across the datagrams already queued behind it, so at a fill of 1.00
+nothing was amortised and any speed difference measured beside it came from
+somewhere else. Five desktop setups have measured 1.7–2.8; a phone has never been
+measured. If iOS reports ~1.0, that is the answer and there is nothing further to
+optimise here.
+
+Figures are per-interval deltas rather than lifetime totals, because a phone
+spends most of its time idle, keepalives run at a fill of 1.0, and cumulative
+numbers drift toward "batching did nothing" no matter what happened under load.
+
+The reporter stops itself when the tunnel goes down, so a NetworkExtension that
+cycles tunnels does not accumulate goroutines. Leave the interval at 0 in a
+shipping build.
+
+Implementation notes: `batchstats-apple.go` is a separate file and `api-apple.go`
+is untouched, so upstream changes to it rebase cleanly. The exported symbol is
+`wgEnableBatchStats(handle, seconds)`, declared in `wireguard.h`. It compiles
+only against the VMPGuard engine — upstream exports neither counter.

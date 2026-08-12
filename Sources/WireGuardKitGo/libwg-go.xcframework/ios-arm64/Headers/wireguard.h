@@ -20,4 +20,10 @@ extern void wgBumpSockets(int handle);
 extern void wgDisableSomeRoamingForBrokenMobileSemantics(int handle);
 extern const char *wgVersion();
 
+/* VMPGuard: log batched-syscall fill rates every `seconds` through the tunnel's
+ * logger. Opt-in — nothing is reported unless this is called. Returns 0, or -1
+ * for an unknown handle. Stops when the tunnel goes down. Requires the VMPGuard
+ * engine; upstream wireguard-go has no batch counters. */
+extern int32_t wgEnableBatchStats(int32_t handle, int32_t seconds);
+
 #endif

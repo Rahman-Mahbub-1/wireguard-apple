@@ -89,6 +89,17 @@ public class WireGuardAdapter {
         return nil
     }
 
+    /// VMPGuard: how often, in seconds, the Go engine logs batched-syscall fill
+    /// rates through the tunnel logger. Zero — the default — reports nothing.
+    ///
+    /// Set this before starting the tunnel. It answers the only question that
+    /// decides whether Darwin batching is worth shipping: how many datagrams one
+    /// `recvmsg_x` actually returns. A reported fill of 1.0 means batching never
+    /// engaged, and any speed difference measured alongside it came from
+    /// somewhere else. Leave it at zero in a shipping build — a
+    /// NetworkExtension has little enough memory and CPU as it is.
+    public static var batchStatsInterval: Int32 = 0
+
     /// Returns a WireGuard version.
     class var backendVersion: String {
         guard let ver = wgVersion() else { return "unknown" }
@@ -380,6 +391,9 @@ public class WireGuardAdapter {
         #if os(iOS)
         wgDisableSomeRoamingForBrokenMobileSemantics(handle)
         #endif
+        if Self.batchStatsInterval > 0 {
+            wgEnableBatchStats(handle, Self.batchStatsInterval)
+        }
         return handle
     }
 
